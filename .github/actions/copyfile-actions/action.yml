@@ -61,17 +61,17 @@ inputs:
 
 runs:
   using: 'composite'
-  steps:     
-     - name: Task-Header
-        run: |
-          Write-Host "===================================================================================================="
-          Write-Host "Task        : Copy files"
-          Write-Host "Description : copy files from a source folder to a target folder using match patterns."
-          Write-Host "Version     : V2"
-          Write-Host "Author      : Dinesh"
-          Write-Host "Help        : https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/copy-files-v2"
-          Write-Host "===================================================================================================="          
-        shell: pwsh
+  steps:
+    - name: Task-Header
+      run: |
+        Write-Host "===================================================================================================="
+        Write-Host "Task        : Copy files"
+        Write-Host "Description : copy files from a source folder to a target folder using match patterns."
+        Write-Host "Version     : V2"
+        Write-Host "Author      : Dinesh"
+        Write-Host "Help        : https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/copy-files-v2"
+        Write-Host "===================================================================================================="
+      shell: pwsh
      - name: Validate - Inputs
         run: |
           Write-Host "Source Folder: ${{ inputs.SourceFolder }}"
