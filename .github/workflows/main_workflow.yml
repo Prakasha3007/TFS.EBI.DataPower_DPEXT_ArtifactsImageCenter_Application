@@ -16,9 +16,9 @@ jobs:
       - name: checking the copy files
         uses: ./.github/actions/copyfile-actions
         with:
-          SourceFolder: ${{ github.workspace }}
-          contents: '*.xml'
-          TargetFolder: "${{ github.workspace }}\\artifacts\\"
+          SourceFolder: ./
+          contents: 'ArtifactsImageCenter_FileManifest.xml'
+          TargetFolder: "artifacts"
           CleanTargetFolder: true
           overwrite: false
           FlattenFolders: false
