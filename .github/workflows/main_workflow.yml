@@ -7,14 +7,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  call-called-maven-workflow:
-    uses: ./.github/workflows/called_maven_workflow.yml
-    with:
-      mavenPomFile: './pom.xml'
-      goals: 'clean package'
-      #options: '--global-settings $(USERPROFILE)\.m2\settings.xml --settings local-settings.xml -Pdeployed-war -Dbuild.number=$(Build.BuildNumber) -U'
-      options: ''
-      #publishJUnitResults: 'false'
-      testRunTitle: 'IBP Data Query'
-      jdkVersionOption: '8'
+  copy-files:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: checking the copy files
+        uses: ./.github/actions/copyfile-actions
+        with:
+          SourceFolder: ${{ github.workspace }}
+          contents: '*.xml'
+          TargetFolder: "${{ github.workspace }}\\artifacts\\"
+          CleanTargetFolder: true
+          overwrite: false
+          FlattenFolders: false
+          preserveTimestamp: false
+          retryCount: '3'
+          delayBetweenRetries: '5000'
+          ignoreMakeDirErrors: false
+
 
