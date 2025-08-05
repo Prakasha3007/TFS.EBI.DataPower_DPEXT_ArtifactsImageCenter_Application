@@ -174,7 +174,10 @@ runs:
             if ($flatten) {
               $destination = Join-Path -Path $target -ChildPath $file.Name
             } else {
+               Write-Host "Source linght checking ::: $source.Length"
+               Write-Host "file FullName ::: $file.FullName"
               $relativePath = $file.FullName.Substring($source.Length).TrimStart([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+              Write-Host "Relative Path ::: $relativePath"
               $destination = Join-Path -Path $target -ChildPath $relativePath
 
               $destinationDir = Split-Path -Path $destination -Parent
