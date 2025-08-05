@@ -1,0 +1,229 @@
+# ====================================================================================================
+#           Task        : Copy files
+#           Description : copy files from a source folder to a target folder using match patterns.
+#           Version     : v2.1
+# ====================================================================================================
+name: CopyFiles
+
+inputs:
+  SourceFolder:
+    description: 'Source folder path'
+    required: true
+    type: string
+  TargetFolder:
+    description: 'Target folder path'
+    required: true
+    type: string
+  contents:
+    description: 'Contents to copy (minimatch patterns)'
+    required: false
+    type: string
+    default: '**'
+  CleanTargetFolder:
+    description: 'Clean target folder before copying'
+    required: false
+    type: boolean
+    default: false
+  overwrite:
+    description: 'Overwrite files in the target folder'
+    required: false
+    type: boolean
+    default: false
+  FlattenFolders:
+    description: 'Flatten folder structure'
+    required: false
+    type: boolean
+    default: false
+  preserveTimestamp:
+    description: 'Preserve target timestamp during copy'
+    required: false
+    type: boolean
+    default: false
+  retryCount:
+    description: 'Retry count for copying files'
+    required: false
+    type: string
+    default: '0'
+  delayBetweenRetries:
+    description: 'Delay between retries in milliseconds'
+    required: false
+    type: string
+    default: '1000'
+  ignoreMakeDirErrors:
+    description: 'Ignore errors during creation of target folder'
+    required: false
+    type: boolean
+    default: false
+
+runs:
+  using: 'composite'
+
+  steps:
+    - name: Task-Header
+      run: |
+        Write-Host "===================================================================================================="
+        Write-Host "Task        : Copy files"
+        Write-Host "Description : copy files from a source folder to a target folder using match patterns."
+        Write-Host "Version     : v2"
+        Write-Host "===================================================================================================="
+      shell: pwsh
+
+    - name: Validate - Inputs
+      run: |
+        Write-Host "Source Folder: ${{ inputs.SourceFolder }}"
+        Write-Host "Target Folder: ${{ inputs.TargetFolder }}"
+        Write-Host "Contents: ${{ inputs.contents }}"
+        Write-Host "Clean Target Folder: ${{ inputs.CleanTargetFolder }}"
+        Write-Host "Overwrite: ${{ inputs.overwrite }}"
+        Write-Host "Flatten Folders: ${{ inputs.FlattenFolders }}"
+        Write-Host "Preserve Timestamp: ${{ inputs.preserveTimestamp }}"
+        Write-Host "Retry Count: ${{ inputs.retryCount }}"
+        Write-Host "Delay Between Retries: ${{ inputs.delayBetweenRetries }}"
+        Write-Host "Ignore MakeDir Errors: ${{ inputs.ignoreMakeDirErrors }}"
+      shell: pwsh
+
+    - name: Verify Source Folder
+      run: |
+        try {
+          if ([System.IO.Path]::IsPathRooted("${{ inputs.SourceFolder }}")) {
+            $source = "${{ inputs.SourceFolder }}"
+          } else {
+            $source = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.SourceFolder }}"
+          }
+
+          Write-Host "Checking if source folder exists: $source"
+          if (-Not (Test-Path -Path $source)) {
+            Write-Error "Source folder does not exist: $source"
+            exit 1
+          }
+        } catch {
+          Write-Error "An error occurred while verifying the source folder: $_"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Clean Target Folder
+      if: ${{ inputs.CleanTargetFolder }}
+      run: |
+        try {
+          if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
+            $target = "${{ inputs.TargetFolder }}"
+          } else {
+            $target = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.TargetFolder }}"
+          }
+
+          Write-Host "Checking if target folder exists: $target"
+          if (Test-Path -Path $target) {
+            Write-Host "Target folder exists. Cleaning the folder: $target"
+            Remove-Item -Path $target -Recurse -Force
+          } else {
+            Write-Host "Target folder does not exist. Creating directory: $target"
+            New-Item -ItemType Directory -Path $target | Out-Null
+          }
+        } catch {
+          Write-Error "An error occurred while cleaning or creating the target folder: $_"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Copy Files
+      run: |
+        try {
+          Write-Host "===================================================================================================="
+          Write-Host "Task        : Copy files"
+          Write-Host "Description : copy files from a source folder to a target folder using match patterns."
+          Write-Host "Version     : v2"
+          Write-Host "===================================================================================================="
+          if ([System.IO.Path]::IsPathRooted("${{ inputs.SourceFolder }}")) {
+            $source = "${{ inputs.SourceFolder }}"
+          } else {
+            $source = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.SourceFolder }}"
+          }
+
+          if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
+            $target = "${{ inputs.TargetFolder }}"
+          } else {
+            $target = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.TargetFolder }}"
+          }
+
+          $contents = "${{ inputs.contents }}"
+          $overwrite = if ("${{ inputs.overwrite }}" -eq "true") { $true } else { $false }
+          $flatten = if ("${{ inputs.FlattenFolders }}" -eq "true") { $true } else { $false }
+          $preserveTimestamp = if ("${{ inputs.preserveTimestamp }}" -eq "true") { $true } else { $false }
+          $retryCount = [int]${{ inputs.retryCount }}
+          $delayBetweenRetries = [int]${{ inputs.delayBetweenRetries }}
+          $ignoreMakeDirErrors = if ("${{ inputs.ignoreMakeDirErrors }}" -eq "true") { $true } else { $false }
+          $ErrorActionPreference = "Stop"
+
+          if (-not (Test-Path -Path $target)) {
+            try {
+              New-Item -ItemType Directory -Path $target | Out-Null
+            } catch {
+              if (-not $ignoreMakeDirErrors) {
+                throw $_
+              }
+            }
+          }
+
+          $filesToCopy = Get-ChildItem -Path $source -Recurse -Include $contents -File
+          $fileCount = $filesToCopy.Count
+          Write-Host "Found $fileCount files in the $source to copy."
+
+          foreach ($file in $filesToCopy) {
+            $sourceFile = $file.FullName
+            if ($flatten) {
+              $destination = Join-Path -Path $target -ChildPath $file.Name
+            } else {
+              $relativePath = $file.FullName.Substring($source.Length).TrimStart([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+              $destination = Join-Path -Path $target -ChildPath $relativePath
+
+              $destinationDir = Split-Path -Path $destination -Parent
+              if (-not (Test-Path -Path $destinationDir)) {
+                New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+              }
+            }
+
+            Write-Host "Copying $sourceFile to $destination"
+
+            $attempt = 0
+            while ($attempt -le $retryCount) {
+              try {
+                Copy-Item -Path $sourceFile -Destination $destination -Force:$overwrite
+                if ($preserveTimestamp) {
+                  $sourceItem = Get-Item -Path $sourceFile
+                  Set-ItemProperty -Path $destination -Name LastWriteTime -Value $sourceItem.LastWriteTime
+                  Set-ItemProperty -Path $destination -Name CreationTime -Value $sourceItem.CreationTime
+                  Write-Host "Timestamps preserved for file: $destination"
+                  Write-Host "LastWriteTime: $($sourceItem.LastWriteTime)"
+                  Write-Host "CreationTime: $($sourceItem.CreationTime)"
+                }
+                break
+              } catch {
+                if ($attempt -eq $retryCount) {
+                  throw $_
+                }
+                Write-Host "Retrying copy operation... Attempt: $($attempt + 1)"
+                Start-Sleep -Milliseconds $delayBetweenRetries
+              }
+              $attempt++
+            }
+          }
+
+          Write-Host "File copy operation completed successfully."
+        } catch {
+          Write-Error "An error occurred during the file copy operation: $_"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: List Files in Target Folder
+      run: |
+        if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
+          $target = "${{ inputs.TargetFolder }}"
+        } else {
+          $target = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.TargetFolder }}"
+        }
+
+        Write-Host "Listing files in target folder: $target"
+        Get-ChildItem -Path $target 
+      shell: pwsh
