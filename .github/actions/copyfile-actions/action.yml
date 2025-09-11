@@ -1,3 +1,4 @@
+# yaml
 # ====================================================================================================
 #           Task        : Copy files
 #           Description : copy files from a source folder to a target folder using match patterns.
@@ -64,6 +65,7 @@ runs:
         Write-Host "Version     : v2"
         Write-Host "===================================================================================================="
       shell: pwsh
+
     - name: Validate - Inputs
       run: |
         Write-Host "Source Folder: ${{ inputs.SourceFolder }}"
@@ -77,6 +79,7 @@ runs:
         Write-Host "Delay Between Retries: ${{ inputs.delayBetweenRetries }}"
         Write-Host "Ignore MakeDir Errors: ${{ inputs.ignoreMakeDirErrors }}"
       shell: pwsh
+
     - name: Verify Source Folder
       run: |
         try {
@@ -95,168 +98,170 @@ runs:
           exit 1
         }
       shell: pwsh
-- name: Clean Target Folder
-  shell: pwsh
-  if: ${{ inputs.CleanTargetFolder == 'true' }}
-  run: |
-    try {
-      if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
-        $target = "${{ inputs.TargetFolder }}"
-      } else {
-        $target = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.TargetFolder }}"
-      }
 
-      Write-Host "Checking if target folder exists: $target"
-      if (Test-Path -Path $target) {
-        Write-Host "Target folder exists. Cleaning the folder: $target"
-        Remove-Item -Path $target -Recurse -Force -ErrorAction Stop
-        # recreate target folder
+    - name: Clean Target Folder
+      shell: pwsh
+      if: ${{ inputs.CleanTargetFolder == 'true' }}
+      run: |
         try {
-          New-Item -ItemType Directory -Path $target -Force -ErrorAction Stop | Out-Null
-        } catch {
-          Write-Warning "Failed to create target folder after cleaning: $_"
-          throw $_
-        }
-      } else {
-        Write-Host "Target folder does not exist. Creating directory: $target"
-        try {
-          New-Item -ItemType Directory -Path $target -Force -ErrorAction Stop | Out-Null
-        } catch {
-          Write-Error "An error occurred while creating the target folder: $_"
-          if (-not ("${{ inputs.ignoreMakeDirErrors }}" -eq "true")) {
-            exit 1
+          if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
+            $target = "${{ inputs.TargetFolder }}"
           } else {
-            Write-Warning "ignoreMakeDirErrors is true - continuing despite create error."
+            $target = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.TargetFolder }}"
           }
-        }
-      }
-    } catch {
-      Write-Error "An error occurred while cleaning or creating the target folder: $_"
-      exit 1
-    }
 
-- name: Copy Files
-  shell: pwsh
-  run: |
-    try {
-      Write-Host "===================================================================================================="
-      Write-Host "Task        : Copy files"
-      Write-Host "Description : copy files from a source folder to a target folder using match patterns."
-      Write-Host "Version     : v2"
-      Write-Host "===================================================================================================="
-
-      if ([System.IO.Path]::IsPathRooted("${{ inputs.SourceFolder }}")) {
-        $source = "${{ inputs.SourceFolder }}"
-      } else {
-        $source = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.SourceFolder }}"
-      }
-
-      if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
-        $target = "${{ inputs.TargetFolder }}"
-      } else {
-        $target = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.TargetFolder }}"
-      }
-
-      $contentsRaw = "${{ inputs.contents }}"
-      # Split multiline patterns into an array, trim each line, and ignore empty lines
-      $patterns = $contentsRaw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
-      if ($patterns.Count -eq 0) {
-        # fallback to match all if nothing provided
-        $patterns = @("**")
-      }
-
-      $overwrite = if ("${{ inputs.overwrite }}" -eq "true") { $true } else { $false }
-      $flatten = if ("${{ inputs.FlattenFolders }}" -eq "true") { $true } else { $false }
-      $preserveTimestamp = if ("${{ inputs.preserveTimestamp }}" -eq "true") { $true } else { $false }
-      $retryCount = [int]::Parse("${{ inputs.retryCount }}")
-      $delayBetweenRetries = [int]::Parse("${{ inputs.delayBetweenRetries }}")
-      $ignoreMakeDirErrors = if ("${{ inputs.ignoreMakeDirErrors }}" -eq "true") { $true } else { $false }
-      $ErrorActionPreference = "Stop"
-
-      # Ensure target folder exists (respect ignoreMakeDirErrors)
-      if (-not (Test-Path -Path $target)) {
-        try {
-          New-Item -ItemType Directory -Path $target -Force -ErrorAction Stop | Out-Null
-        } catch {
-          if (-not $ignoreMakeDirErrors) {
-            throw $_
-          } else {
-            Write-Warning "Failed to create target folder but ignoreMakeDirErrors=true. Continuing."
-          }
-        }
-      }
-
-      # Use wildcard on Path so -Include works correctly
-      $pathWithWildcard = Join-Path -Path $source -ChildPath "*"
-
-      # Get files matching patterns
-      $filesToCopy = Get-ChildItem -Path $pathWithWildcard -Recurse -Include $patterns -File -ErrorAction Stop
-
-      $fileCount = ($filesToCopy | Measure-Object).Count
-      Write-Host "Found $fileCount files in the $source to copy."
-
-      foreach ($file in $filesToCopy) {
-        $sourceFile = $file.FullName
-        if ($flatten) {
-          $destination = Join-Path -Path $target -ChildPath $file.Name
-        } else {
-          if (-not $source.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
-            $source = $source + [System.IO.Path]::DirectorySeparatorChar
-          }
-          $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName)
-          $destination = Join-Path -Path $target -ChildPath $relativePath
-          $destinationDir = Split-Path -Path $destination -Parent
-          if (-not (Test-Path -Path $destinationDir)) {
+          Write-Host "Checking if target folder exists: $target"
+          if (Test-Path -Path $target) {
+            Write-Host "Target folder exists. Cleaning the folder: $target"
+            Remove-Item -Path $target -Recurse -Force -ErrorAction Stop
+            # recreate target folder
             try {
-              New-Item -ItemType Directory -Path $destinationDir -Force -ErrorAction Stop | Out-Null
+              New-Item -ItemType Directory -Path $target -Force -ErrorAction Stop | Out-Null
+            } catch {
+              Write-Warning "Failed to create target folder after cleaning: $_"
+              throw $_
+            }
+          } else {
+            Write-Host "Target folder does not exist. Creating directory: $target"
+            try {
+              New-Item -ItemType Directory -Path $target -Force -ErrorAction Stop | Out-Null
+            } catch {
+              Write-Error "An error occurred while creating the target folder: $_"
+              if (-not ("${{ inputs.ignoreMakeDirErrors }}" -eq "true")) {
+                exit 1
+              } else {
+                Write-Warning "ignoreMakeDirErrors is true - continuing despite create error."
+              }
+            }
+          }
+        } catch {
+          Write-Error "An error occurred while cleaning or creating the target folder: $_"
+          exit 1
+        }
+
+    - name: Copy Files
+      shell: pwsh
+      run: |
+        try {
+          Write-Host "===================================================================================================="
+          Write-Host "Task        : Copy files"
+          Write-Host "Description : copy files from a source folder to a target folder using match patterns."
+          Write-Host "Version     : v2"
+          Write-Host "===================================================================================================="
+
+          if ([System.IO.Path]::IsPathRooted("${{ inputs.SourceFolder }}")) {
+            $source = "${{ inputs.SourceFolder }}"
+          } else {
+            $source = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.SourceFolder }}"
+          }
+
+          if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
+            $target = "${{ inputs.TargetFolder }}"
+          } else {
+            $target = Join-Path -Path "${{ github.workspace }}" -ChildPath "${{ inputs.TargetFolder }}"
+          }
+
+          $contentsRaw = "${{ inputs.contents }}"
+          # Split multiline patterns into an array, trim each line, and ignore empty lines
+          $patterns = $contentsRaw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+          if ($patterns.Count -eq 0) {
+            # fallback to match all if nothing provided
+            $patterns = @("**")
+          }
+
+          $overwrite = if ("${{ inputs.overwrite }}" -eq "true") { $true } else { $false }
+          $flatten = if ("${{ inputs.FlattenFolders }}" -eq "true") { $true } else { $false }
+          $preserveTimestamp = if ("${{ inputs.preserveTimestamp }}" -eq "true") { $true } else { $false }
+          $retryCount = [int]::Parse("${{ inputs.retryCount }}")
+          $delayBetweenRetries = [int]::Parse("${{ inputs.delayBetweenRetries }}")
+          $ignoreMakeDirErrors = if ("${{ inputs.ignoreMakeDirErrors }}" -eq "true") { $true } else { $false }
+          $ErrorActionPreference = "Stop"
+
+          # Ensure target folder exists (respect ignoreMakeDirErrors)
+          if (-not (Test-Path -Path $target)) {
+            try {
+              New-Item -ItemType Directory -Path $target -Force -ErrorAction Stop | Out-Null
             } catch {
               if (-not $ignoreMakeDirErrors) {
                 throw $_
               } else {
-                Write-Warning "Failed to create destination dir $destinationDir but ignoreMakeDirErrors=true. Continuing."
+                Write-Warning "Failed to create target folder but ignoreMakeDirErrors=true. Continuing."
               }
             }
           }
+
+          # Use wildcard on Path so -Include works correctly
+          $pathWithWildcard = Join-Path -Path $source -ChildPath "*"
+
+          # Get files matching patterns
+          $filesToCopy = Get-ChildItem -Path $pathWithWildcard -Recurse -Include $patterns -File -ErrorAction Stop
+
+          $fileCount = ($filesToCopy | Measure-Object).Count
+          Write-Host "Found $fileCount files in the $source to copy."
+
+          foreach ($file in $filesToCopy) {
+            $sourceFile = $file.FullName
+            if ($flatten) {
+              $destination = Join-Path -Path $target -ChildPath $file.Name
+            } else {
+              if (-not $source.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+                $source = $source + [System.IO.Path]::DirectorySeparatorChar
+              }
+              $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName)
+              $destination = Join-Path -Path $target -ChildPath $relativePath
+              $destinationDir = Split-Path -Path $destination -Parent
+              if (-not (Test-Path -Path $destinationDir)) {
+                try {
+                  New-Item -ItemType Directory -Path $destinationDir -Force -ErrorAction Stop | Out-Null
+                } catch {
+                  if (-not $ignoreMakeDirErrors) {
+                    throw $_
+                  } else {
+                    Write-Warning "Failed to create destination dir $destinationDir but ignoreMakeDirErrors=true. Continuing."
+                  }
+                }
+              }
+            }
+
+            Write-Host "Copying $sourceFile to $destination"
+
+            $attempt = 0
+            while ($attempt -le $retryCount) {
+              try {
+                if ($overwrite) {
+                  Copy-Item -Path $sourceFile -Destination $destination -Force -ErrorAction Stop
+                } else {
+                  Copy-Item -Path $sourceFile -Destination $destination -ErrorAction Stop
+                }
+
+                if ($preserveTimestamp) {
+                  $sourceItem = Get-Item -Path $sourceFile -ErrorAction Stop
+                  # Set timestamps on the copied file
+                  Set-ItemProperty -Path $destination -Name LastWriteTime -Value $sourceItem.LastWriteTime -ErrorAction Stop
+                  Set-ItemProperty -Path $destination -Name CreationTime -Value $sourceItem.CreationTime -ErrorAction Stop
+                  Write-Host "Timestamps preserved for file: $destination"
+                  Write-Host "LastWriteTime: $($sourceItem.LastWriteTime)"
+                  Write-Host "CreationTime: $($sourceItem.CreationTime)"
+                }
+                break
+              } catch {
+                if ($attempt -eq $retryCount) {
+                  Write-Error "Failed to copy $sourceFile after $($attempt + 1) attempt(s): $_"
+                  throw $_
+                }
+                Write-Host "Retrying copy operation... Attempt: $($attempt + 1) - Error: $_"
+                Start-Sleep -Milliseconds $delayBetweenRetries
+              }
+              $attempt++
+            } # end while
+          } # end foreach
+
+          Write-Host "File copy operation completed successfully."
+        } catch {
+          Write-Error "An error occurred during the file copy operation: $_"
+          exit 1
         }
 
-        Write-Host "Copying $sourceFile to $destination"
-
-        $attempt = 0
-        while ($attempt -le $retryCount) {
-          try {
-            if ($overwrite) {
-              Copy-Item -Path $sourceFile -Destination $destination -Force -ErrorAction Stop
-            } else {
-              Copy-Item -Path $sourceFile -Destination $destination -ErrorAction Stop
-            }
-
-            if ($preserveTimestamp) {
-              $sourceItem = Get-Item -Path $sourceFile -ErrorAction Stop
-              # Set timestamps on the copied file
-              Set-ItemProperty -Path $destination -Name LastWriteTime -Value $sourceItem.LastWriteTime -ErrorAction Stop
-              Set-ItemProperty -Path $destination -Name CreationTime -Value $sourceItem.CreationTime -ErrorAction Stop
-              Write-Host "Timestamps preserved for file: $destination"
-              Write-Host "LastWriteTime: $($sourceItem.LastWriteTime)"
-              Write-Host "CreationTime: $($sourceItem.CreationTime)"
-            }
-            break
-          } catch {
-            if ($attempt -eq $retryCount) {
-              Write-Error "Failed to copy $sourceFile after $($attempt + 1) attempt(s): $_"
-              throw $_
-            }
-            Write-Host "Retrying copy operation... Attempt: $($attempt + 1) - Error: $_"
-            Start-Sleep -Milliseconds $delayBetweenRetries
-          }
-          $attempt++
-        } # end while
-      } # end foreach
-
-      Write-Host "File copy operation completed successfully."
-    } catch {
-      Write-Error "An error occurred during the file copy operation: $_"
-      exit 1
-    }
     - name: List Files in Target Folder
       run: |
         if ([System.IO.Path]::IsPathRooted("${{ inputs.TargetFolder }}")) {
