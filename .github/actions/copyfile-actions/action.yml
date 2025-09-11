@@ -174,21 +174,11 @@ runs:
             if ($flatten) {
               $destination = Join-Path -Path $target -ChildPath $file.Name
             } else {
-               Write-Host "Source linght checking ::: $source.Length"
-               Write-Host "file FullName ::: $file.FullName"
-               
-              # Ensure the source path has a trailing directory separator
               if (-not $source.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
                   $source = $source + [System.IO.Path]::DirectorySeparatorChar
               }
-              
-              # Use [System.IO.Path]::GetRelativePath to calculate the relative path
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName)
-              Write-Host "Relative Path ::: $relativePath"
-              #$relativePath = $file.FullName.Substring($source.Length).TrimStart([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
-              #Write-Host "Relative Path :::: $relativePath"
               $destination = Join-Path -Path $target -ChildPath $relativePath
-
               $destinationDir = Split-Path -Path $destination -Parent
               if (-not (Test-Path -Path $destinationDir)) {
                 New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
