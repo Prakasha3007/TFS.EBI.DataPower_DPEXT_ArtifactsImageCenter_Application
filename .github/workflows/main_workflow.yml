@@ -19,8 +19,8 @@ jobs:
           SourceFolder: src/main/java
           contents: 'App.java'
           TargetFolder: "targetFolder"
-          CleanTargetFolder: false
-          overwrite: false
+          CleanTargetFolder: true
+          overwrite: true
           FlattenFolders: false
           preserveTimestamp: false
           retryCount: '3'
