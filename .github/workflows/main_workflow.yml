@@ -17,11 +17,11 @@ jobs:
         uses: ./.github/actions/copyfile-actions_v1
         with:
           SourceFolder: src/main/java
-          contents: '*.txt'
+          contents: '**'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: true
-          FlattenFolders: false
+          FlattenFolders: true
           preserveTimestamp: false
           retryCount: '3'
           delayBetweenRetries: '5000'
