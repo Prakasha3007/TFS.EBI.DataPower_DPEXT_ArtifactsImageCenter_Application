@@ -19,7 +19,8 @@ jobs:
           # SourceFolder: src/main
           # contents: '**'
           SourceFolder: '${{ github.workspace }}'
-          contents: '**\src\main\**'
+          #contents: '**\src\main\**'
+          contents: '**'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
