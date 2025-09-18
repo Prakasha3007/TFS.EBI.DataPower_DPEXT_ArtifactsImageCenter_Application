@@ -171,22 +171,34 @@ runs:
                 
                 if ($overwrite) {
                   Copy-Item $sourceFile $destination -Force
+                  $copied = $true
                 } else {
                   if (-not $destinationExists) {
                     Write-Host "Copying new file: $destination"
+                    $copied = $true
                     Copy-Item $sourceFile $destination
                   } else {
                     Write-Host "Skipping existing file due to overwrite=false: $destination"
                   }
                 }
 
-
-                if ($preserveTimestamp) {
-                  $srcItem = Get-Item $sourceFile
-                  Set-ItemProperty $destination -Name LastWriteTime -Value $srcItem.LastWriteTime
-                  Set-ItemProperty $destination -Name CreationTime -Value $srcItem.CreationTime
-                  Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
-                  Write-Host "Timestamps preserved for: $destination"
+                # if ($preserveTimestamp) {
+                #   $srcItem = Get-Item $sourceFile
+                #   Set-ItemProperty $destination -Name LastWriteTime -Value $srcItem.LastWriteTime
+                #   Set-ItemProperty $destination -Name CreationTime -Value $srcItem.CreationTime
+                #   Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
+                #   Write-Host "Timestamps preserved for: $destination"
+                # }
+                if ($preserveTimestamp -and $copied) {
+                try {
+                    $srcItem = Get-Item $sourceFile
+                    Set-ItemProperty $destination -Name LastWriteTime -Value $srcItem.LastWriteTime
+                    Set-ItemProperty $destination -Name CreationTime -Value $srcItem.CreationTime
+                    Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
+                    Write-Host "Timestamps preserved for: $destination"
+                  } catch {
+                    Write-Warning "Failed to preserve timestamps for $destination: $_"
+                  }
                 }
 
                 break
