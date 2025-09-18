@@ -165,7 +165,7 @@ runs:
                     $destItem.Attributes = $destItem.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
                   }
                 }
-
+                Write-Host "overwrite Checking: $overwrite"
                 if ($overwrite) {
                   Copy-Item $sourceFile $destination -Force
                 } else {
