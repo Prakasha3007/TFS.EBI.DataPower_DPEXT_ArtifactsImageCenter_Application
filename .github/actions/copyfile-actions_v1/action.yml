@@ -189,18 +189,42 @@ runs:
                 #   Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
                 #   Write-Host "Timestamps preserved for: $destination"
                 # }
-                if ($preserveTimestamp -and $copied) {
-                try {
+                # if ($preserveTimestamp -and $copied) {
+                # try {
+                #     $srcItem = Get-Item $sourceFile
+                #     Set-ItemProperty $destination -Name LastWriteTime -Value $srcItem.LastWriteTime
+                #     Set-ItemProperty $destination -Name CreationTime -Value $srcItem.CreationTime
+                #     Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
+                #     Write-Host "Timestamps preserved for: $destination"
+                #   } catch {
+                #     #Write-Warning "Failed to preserve timestamps for $destination: $_"
+                #     Write-Warning "Failed to preserve timestamps for ${destination}: $_"
+                #   }
+                # }
+                if ($copied) {
+                if ($preserveTimestamp) {
+                  try {
                     $srcItem = Get-Item $sourceFile
                     Set-ItemProperty $destination -Name LastWriteTime -Value $srcItem.LastWriteTime
                     Set-ItemProperty $destination -Name CreationTime -Value $srcItem.CreationTime
                     Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
                     Write-Host "Timestamps preserved for: $destination"
                   } catch {
-                    #Write-Warning "Failed to preserve timestamps for $destination: $_"
                     Write-Warning "Failed to preserve timestamps for ${destination}: $_"
                   }
+                } else {
+                  try {
+                    $now = Get-Date
+                    Set-ItemProperty $destination -Name LastWriteTime -Value $now
+                    Set-ItemProperty $destination -Name CreationTime -Value $now
+                    Set-ItemProperty $destination -Name LastAccessTime -Value $now
+                    Write-Host "Timestamps reset to current time for: $destination"
+                  } catch {
+                    Write-Warning "Failed to reset timestamps for ${destination}: $_"
+                  }
                 }
+              }
+
 
                 break
               } catch {
