@@ -19,7 +19,7 @@ jobs:
           SourceFolder: src/main/java
           contents: '*.txt'
           TargetFolder: "targetFolder"
-          CleanTargetFolder: true
+          CleanTargetFolder: false
           overwrite: false
           FlattenFolders: false
           preserveTimestamp: false
