@@ -165,9 +165,9 @@ runs:
                     $destItem.Attributes = $destItem.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
                   }
                 }
-                $destinationExists = Test-Path $destination
-                Write-Host "Resolved destination path: $destination"
-                Write-Host "Destination exists: $destinationExists"
+                # $destinationExists = Test-Path $destination
+                # Write-Host "Resolved destination path: $destination"
+                # Write-Host "Destination exists: $destinationExists"
                 
                 if ($overwrite) {
                   Copy-Item $sourceFile $destination -Force
@@ -197,7 +197,8 @@ runs:
                     Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
                     Write-Host "Timestamps preserved for: $destination"
                   } catch {
-                    Write-Warning "Failed to preserve timestamps for $destination: $_"
+                    #Write-Warning "Failed to preserve timestamps for $destination: $_"
+                    Write-Warning "Failed to preserve timestamps for ${destination}: $_"
                   }
                 }
 
