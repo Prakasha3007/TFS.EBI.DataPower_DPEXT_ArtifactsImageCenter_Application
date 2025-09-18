@@ -16,7 +16,7 @@ jobs:
       - name: checking the copy files
         uses: ./.github/actions/copyfile-actions_v1
         with:
-          SourceFolder: src/main/java
+          SourceFolder: src/main
           contents: '**'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
