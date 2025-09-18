@@ -16,11 +16,12 @@ jobs:
       - name: checking the copy files
         uses: ./.github/actions/copyfile-actions_v1
         with:
-          #SourceFolder: src/main
+          SourceFolder: src/main
           # contents: '**'
-          SourceFolder: '${{ github.workspace }}'
+          #SourceFolder: '${{ github.workspace }}'
           #contents: '**\src\main\**'
-          contents: '**\src\main\*.java'
+          #contents: '**\src\main\*.java'
+          contents: '*.txt'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
