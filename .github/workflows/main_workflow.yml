@@ -20,7 +20,7 @@ jobs:
           contents: '*.txt'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
-          overwrite: false
+          overwrite: true
           FlattenFolders: false
           preserveTimestamp: false
           retryCount: '3'
