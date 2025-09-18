@@ -13,26 +13,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # - name: checking the copy files
-      #   uses: ./.github/actions/copyfile-actions
-      #   with:
-      #     SourceFolder: src/main/java
-      #     contents: 'App.java'
-      #     TargetFolder: "targetFolder"
-      #     CleanTargetFolder: true
-      #     overwrite: true
-      #     FlattenFolders: false
-      #     preserveTimestamp: false
-      #     retryCount: '3'
-      #     delayBetweenRetries: '5000'
-      #     ignoreMakeDirErrors: false
-      
       - name: checking the copy files
         uses: ./.github/actions/copyfile-actions_v1
         with:
-          SourceFolder: ./
-          contents: 'ArtifactsImageCenter_FileManifest.xml'
-          TargetFolder: "artifacts"
+          SourceFolder: src/main/java
+          contents: 'App.java'
+          TargetFolder: "targetFolder"
           CleanTargetFolder: true
           overwrite: false
           FlattenFolders: false
@@ -40,5 +26,19 @@ jobs:
           retryCount: '3'
           delayBetweenRetries: '5000'
           ignoreMakeDirErrors: false
+      
+      # - name: checking the copy files
+      #   uses: ./.github/actions/copyfile-actions_v1
+      #   with:
+      #     SourceFolder: ./
+      #     contents: 'ArtifactsImageCenter_FileManifest.xml'
+      #     TargetFolder: "artifacts"
+      #     CleanTargetFolder: true
+      #     overwrite: false
+      #     FlattenFolders: false
+      #     preserveTimestamp: false
+      #     retryCount: '3'
+      #     delayBetweenRetries: '5000'
+      #     ignoreMakeDirErrors: false
 
 
