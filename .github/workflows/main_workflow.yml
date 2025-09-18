@@ -22,7 +22,7 @@ jobs:
           CleanTargetFolder: false
           overwrite: false
           FlattenFolders: true
-          preserveTimestamp: true
+          preserveTimestamp: false
           retryCount: '3'
           delayBetweenRetries: '5000'
           ignoreMakeDirErrors: false
