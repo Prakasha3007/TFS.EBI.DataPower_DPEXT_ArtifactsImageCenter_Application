@@ -19,7 +19,7 @@ jobs:
           SourceFolder: src/main/java
           contents: 'App.java'
           TargetFolder: "targetFolder"
-          CleanTargetFolder: true
+          CleanTargetFolder: false
           overwrite: false
           FlattenFolders: false
           preserveTimestamp: false
