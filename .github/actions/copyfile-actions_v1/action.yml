@@ -125,11 +125,18 @@ runs:
           # foreach ($pattern in $patterns) {
           #   $matchedFiles += $allFiles | Where-Object { $_.FullName -like "$source\$pattern" }
           # }
+          # $matchedFiles = @()
+          # foreach ($pattern in $patterns) {
+          #   $matchedFiles += Get-ChildItem -Path $source -Recurse -File -Include $pattern
+          # }
+          $allFiles = Get-ChildItem -Path $source -Recurse -File
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
-            $matchedFiles += Get-ChildItem -Path $source -Recurse -File -Include $pattern
+            $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
+            $matchedFiles += $allFiles | Where-Object {
+              ($_.FullName -replace '\\', '/') -like "*$wildcardPattern*"
+            }
           }
-
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
 
