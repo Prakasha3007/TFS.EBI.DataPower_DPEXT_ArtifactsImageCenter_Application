@@ -120,11 +120,16 @@ runs:
             }
           }
 
-          $allFiles = Get-ChildItem -Path $source -Recurse -File
+          # $allFiles = Get-ChildItem -Path $source -Recurse -File
+          # $matchedFiles = @()
+          # foreach ($pattern in $patterns) {
+          #   $matchedFiles += $allFiles | Where-Object { $_.FullName -like "$source\$pattern" }
+          # }
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
-            $matchedFiles += $allFiles | Where-Object { $_.FullName -like "$source\$pattern" }
+            $matchedFiles += Get-ChildItem -Path $source -Recurse -File -Include $pattern
           }
+
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
 
