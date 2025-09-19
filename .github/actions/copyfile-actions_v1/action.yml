@@ -1,7 +1,7 @@
 # ====================================================================================================
 #           Task        : Copy files
 #           Description : copy files from a source folder to a target folder using match patterns.
-#           Version     : v2.1
+#           Version     : v2.0
 # ====================================================================================================
 name: CopyFiles
 description: GitHub composite action to replicate Azure DevOps CopyFiles@2 behavior
@@ -35,11 +35,11 @@ inputs:
   retryCount:
     description: 'Number of retry attempts'
     required: false
-    default: '3'
+    default: '0'
   delayBetweenRetries:
     description: 'Delay between retries in milliseconds'
     required: false
-    default: '500'
+    default: '1000'
   ignoreMakeDirErrors:
     description: 'Ignore errors when creating directories'
     required: false
@@ -101,18 +101,19 @@ runs:
           $ignoreMakeDirErrors = "${{ inputs.ignoreMakeDirErrors }}" -eq "true"
           $cleanTarget = "${{ inputs.CleanTargetFolder }}" -eq "true"
           $ErrorActionPreference = "Stop"
-
+          
           if (-not (Test-Path $source)) {
             Write-Error "Source folder does not exist: $source"
             exit 1
           }
 
           if ($cleanTarget -and (Test-Path $target)) {
-            Write-Host "Cleaning target folder: $target"
+            Write-Host "Target folder exists. Cleaning the target folder: $target"
             Remove-Item -Path $target -Recurse -Force
             New-Item -ItemType Directory -Path $target -Force | Out-Null
           } elseif (-not (Test-Path $target)) {
             try {
+              Write-Host "Target folder does not exist. Creating directory: $target"
               New-Item -ItemType Directory -Path $target -Force | Out-Null
             } catch {
               if (-not $ignoreMakeDirErrors) { throw $_ }
@@ -120,15 +121,6 @@ runs:
             }
           }
 
-          # $allFiles = Get-ChildItem -Path $source -Recurse -File
-          # $matchedFiles = @()
-          # foreach ($pattern in $patterns) {
-          #   $matchedFiles += $allFiles | Where-Object { $_.FullName -like "$source\$pattern" }
-          # }
-          # $matchedFiles = @()
-          # foreach ($pattern in $patterns) {
-          #   $matchedFiles += Get-ChildItem -Path $source -Recurse -File -Include $pattern
-          # }
           $allFiles = Get-ChildItem -Path $source -Recurse -File
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
@@ -137,15 +129,12 @@ runs:
               ($_.FullName -replace '\\', '/') -like "*$wildcardPattern*"
             }
           }
-
           Write-Host "Found $($matchedFiles.Count) files to copy."
-
           foreach ($file in $matchedFiles) {
             $sourceFile = $file.FullName
             $destination = if ($flatten) {
               Join-Path $target $file.Name
             } else {
-              #$relative = $sourceFile.Substring($source.Length).TrimStart('\')
               $relative = [System.IO.Path]::GetRelativePath($source, $sourceFile)
               Join-Path $target $relative
             }
@@ -161,7 +150,6 @@ runs:
             }
 
             Write-Host "Copying $sourceFile to $destination"
-
             $attempt = 0
             while ($attempt -le $retryCount) {
               try {
@@ -172,10 +160,8 @@ runs:
                     $destItem.Attributes = $destItem.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
                   }
                 }
-                # $destinationExists = Test-Path $destination
-                # Write-Host "Resolved destination path: $destination"
-                # Write-Host "Destination exists: $destinationExists"
                 
+                $destinationExists = Test-Path $destination
                 if ($overwrite) {
                   Copy-Item $sourceFile $destination -Force
                   $copied = $true
@@ -189,25 +175,6 @@ runs:
                   }
                 }
 
-                # if ($preserveTimestamp) {
-                #   $srcItem = Get-Item $sourceFile
-                #   Set-ItemProperty $destination -Name LastWriteTime -Value $srcItem.LastWriteTime
-                #   Set-ItemProperty $destination -Name CreationTime -Value $srcItem.CreationTime
-                #   Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
-                #   Write-Host "Timestamps preserved for: $destination"
-                # }
-                # if ($preserveTimestamp -and $copied) {
-                # try {
-                #     $srcItem = Get-Item $sourceFile
-                #     Set-ItemProperty $destination -Name LastWriteTime -Value $srcItem.LastWriteTime
-                #     Set-ItemProperty $destination -Name CreationTime -Value $srcItem.CreationTime
-                #     Set-ItemProperty $destination -Name LastAccessTime -Value $srcItem.LastAccessTime
-                #     Write-Host "Timestamps preserved for: $destination"
-                #   } catch {
-                #     #Write-Warning "Failed to preserve timestamps for $destination: $_"
-                #     Write-Warning "Failed to preserve timestamps for ${destination}: $_"
-                #   }
-                # }
                 if ($copied) {
                 if ($preserveTimestamp) {
                   try {
@@ -231,8 +198,6 @@ runs:
                   }
                 }
               }
-
-
                 break
               } catch {
                 if ($attempt -eq $retryCount) {
@@ -245,9 +210,9 @@ runs:
               $attempt++
             }
           }
-          Write-Host "✅ Copy operation completed successfully."
+          Write-Host "Copy operation completed successfully."
         } catch {
-          Write-Error "❌ Fatal error during copy: $_"
+          Write-Error "Fatal error during copy: $_"
           exit 1
         }
     - name: List Files in Target Folder
