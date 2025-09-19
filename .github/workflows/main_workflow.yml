@@ -22,7 +22,7 @@ jobs:
           #contents: '**\src\main\**'
           #contents: '**\src\main\*.java'
           #contents: 'sample.txt'
-          contents: 'main\*.java'
+          contents: 'main\sample.txt'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
