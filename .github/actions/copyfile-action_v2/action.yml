@@ -182,7 +182,8 @@ runs:
           # Write-Host "Total matched files: $($matchedFiles.Count)"
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
-            $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
+            #$wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
+            $wildcardPattern = $pattern -replace '\\', '/' -replace '\*\*/', ''
           
             foreach ($file in $allFiles) {
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
