@@ -37,8 +37,8 @@ jobs:
           #contents: 'sample.txt'
           #contents: 'main\flat'
           #contents: '*'
-          #contents: 'flat\*.txt,java\App.java'
-          contents: 'flat\Global.asax'
+          contents: 'flat\*.txt,java\App.java'
+          #contents: 'flat\Global.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
