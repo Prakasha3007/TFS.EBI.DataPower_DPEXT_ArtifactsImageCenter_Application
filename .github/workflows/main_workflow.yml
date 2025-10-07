@@ -13,17 +13,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         
-      - name: Test contents parsing
-        shell: pwsh
-        run: |
-          $patterns = @()
-          foreach ($line in "a,b,c`nd,e" -split "[`n,]") {
-            $trimmed = $line.Trim()
-            if ($trimmed) {
-              $patterns += $trimmed
-            }
-          }
-          Write-Host "Patterns: $($patterns -join ', ')"
+      # - name: Test contents parsing
+      #   shell: pwsh
+      #   run: |
+      #     $patterns = @()
+      #     foreach ($line in "a,b,c`nd,e" -split "[`n,]") {
+      #       $trimmed = $line.Trim()
+      #       if ($trimmed) {
+      #         $patterns += $trimmed
+      #       }
+      #     }
+      #     Write-Host "Patterns: $($patterns -join ', ')"
   
 
       - name: checking the copy files
@@ -37,7 +37,8 @@ jobs:
           #contents: 'sample.txt'
           #contents: 'main\flat'
           #contents: '*'
-          contents: 'flat\*.txt,java\App.java'
+          #contents: 'flat\*.txt,java\App.java'
+          contents: 'flat\Global.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
