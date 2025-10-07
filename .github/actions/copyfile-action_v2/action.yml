@@ -174,10 +174,24 @@ runs:
           
           $allFiles = Get-ChildItem -Path $source -Recurse -File
           $matchedFiles = @()
+          # foreach ($pattern in $patterns) {
+          #   $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
+          #   $matchedFiles += $allFiles | Where-Object {
+          #     ($_.FullName -replace '\\', '/') -like "*$wildcardPattern*"
+          #   }
+          # }
           foreach ($pattern in $patterns) {
-            $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
-            $matchedFiles += $allFiles | Where-Object {
-              ($_.FullName -replace '\\', '/') -like "*$wildcardPattern*"
+            $wildcardPattern = $pattern -replace '\\', '/'
+            if ($wildcardPattern -like '*[*?]*') {
+              # Wildcard match
+              $matchedFiles += $allFiles | Where-Object {
+                ($_.FullName -replace '\\', '/') -like $wildcardPattern
+              }
+            } else {
+              # Exact match
+              $matchedFiles += $allFiles | Where-Object {
+                ($_.FullName -replace '\\', '/') -eq $wildcardPattern
+              }
             }
           }
           Write-Host "Found $($matchedFiles.Count) files to copy."
