@@ -100,35 +100,7 @@ runs:
           if (-not [System.IO.Path]::IsPathRooted($target)) {
             $target = Join-Path "${{ github.workspace }}" $target
           }
-
-          # # ENHANCED PATTERN LOGIC: support multiline, trim, strip quotes, ignore empty lines
-          # $patterns = @()
-          # foreach ($line in "${{ inputs.contents }}" -split "`n") {
-          #   $trimmed = $line.Trim()
-          #   if ($trimmed) {
-          #     # Strip quotes if present
-          #     if ($trimmed.StartsWith('"') -and $trimmed.EndsWith('"')) {
-          #       $trimmed = $trimmed.Substring(1, $trimmed.Length - 2)
-          #     }
-          #     $patterns += $trimmed
-          #   }
-          # }
-          # if ($patterns.Count -eq 0) { $patterns = @("**") }
-
-          # Enhanced pattern parsing: supports newline, comma, trims, strips quotes
-          # $patterns = @()
-          # foreach ($line in "${{ inputs.contents }}" -split "[`n,]") {
-          #   $trimmed = $line.Trim()
-          #   if ($trimmed) {
-          #     if ($trimmed.StartsWith('"') -and $trimmed.EndsWith('"')) {
-          #       $trimmed = $trimmed.Substring(1, $trimmed.Length - 2)
-          #     }
-          #     $patterns += $trimmed
-          #   }
-          # }
-          # if ($patterns.Count -eq 0) { $patterns = @("**") }
           $patterns = @()
-          #foreach ($line in "${{ inputs.contents }}" -split "[`n,]") {
           foreach ($line in "${{ inputs.contents }}" -split "," ) {
             $trimmed = $line.Trim()
             if ($trimmed) {
@@ -142,8 +114,6 @@ runs:
           
           # Default to "**" if no valid patterns found
           if ($patterns.Count -eq 0) { $patterns = @("**") }
-
-
 
           $overwrite = "${{ inputs.overwrite }}" -eq "true"
           $flatten = "${{ inputs.FlattenFolders }}" -eq "true"
@@ -198,6 +168,7 @@ runs:
           
             foreach ($file in $allFiles) {
               # Normalize relative path
+              Write-Host "source: $source"
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
               Write-Host "Matching relativePath: $relativePath"
           
@@ -209,9 +180,6 @@ runs:
             }
           }
           Write-Host "Total matched files: $($matchedFiles.Count)"
-
-
-
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
           foreach ($file in $matchedFiles) {
