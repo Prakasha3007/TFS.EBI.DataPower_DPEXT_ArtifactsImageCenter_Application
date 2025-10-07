@@ -17,11 +17,11 @@ jobs:
         uses: ./.github/actions/copyfile-action_v2
         #uses: ./.github/actions/copyfile-actions_v1
         with:
-          SourceFolder: src/main
-          #SourceFolder: ${{ github.workspace }}
+          #SourceFolder: src/main
+          SourceFolder: ${{ github.workspace }}
           # contents: '**'
           #SourceFolder: '${{ github.workspace }}'
-          #contents: '**\src\main\**'
+          contents: '**\src\main\**'
           #contents: '*src/main/*'
           #contents: 'src/main/**'
           #contents: '**\src\main\*.java'
@@ -30,7 +30,7 @@ jobs:
           #contents: '*'
           #contents: 'ArtifactsImageCenter_FileManifest.xml'
           #contents: 'flat\*.txt,java\App.java'
-          contents: 'flat\Global.asax'
+          #contents: 'flat\Global.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
