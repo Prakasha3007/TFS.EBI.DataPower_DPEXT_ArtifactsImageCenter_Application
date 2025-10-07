@@ -173,68 +173,43 @@ runs:
           }
           
           $allFiles = Get-ChildItem -Path $source -Recurse -File
-          $matchedFiles = @()
-          # foreach ($pattern in $patterns) {
-          #   $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
-          #   $matchedFiles += $allFiles | Where-Object {
-          #     ($_.FullName -replace '\\', '/') -like "*$wildcardPattern*"
-          #   }
-          # }
           # $matchedFiles = @()
           # foreach ($pattern in $patterns) {
-          #   $wildcardPattern = $pattern -replace '\\', '/'
+          #   $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
           #   Write-Host "Matching with pattern: $wildcardPattern"
           
           #   foreach ($file in $allFiles) {
           #     $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-          #     if ($wildcardPattern -like '*[*?]*') {
-          #       if ($relativePath -like "*$wildcardPattern*") {
-          #         Write-Host "  -> Matched (wildcard): $relativePath"
-          #         $matchedFiles += $file
-          #       }
-          #     } else {
-          #       if ($relativePath -eq $wildcardPattern) {
-          #         Write-Host "  -> Matched (exact): $relativePath"
-          #         $matchedFiles += $file
-          #       }
-          #     }
-          #   }
-          # }
-          # Write-Host "Total matched files: $($matchedFiles.Count)"
-
-          # $matchedFiles = @()
-          # foreach ($pattern in $patterns) {
-          #   $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
-          #   $regexPattern = [Regex]::Escape($wildcardPattern) -replace '\\\\\*', '.*' -replace '\\\\\?', '.'
-          #   $regex = "^$regexPattern$"
-          
-          #   Write-Host "Matching with regex: $regex"
-          
-          #   foreach ($file in $allFiles) {
-          #     $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-          #     if ($relativePath -match $regex) {
+          #     Write-Host "Matching relativePath: $relativePath"
+          #     # Match using -like directly
+          #     if ($relativePath -like $wildcardPattern) {
           #       Write-Host "  -> Matched: $relativePath"
           #       $matchedFiles += $file
           #     }
           #   }
           # }
           # Write-Host "Total matched files: $($matchedFiles.Count)"
+
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
-            $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
+            # Normalize slashes in pattern
+            $wildcardPattern = $pattern -replace '\\', '/' -replace '\*\*/', ''  # remove leading **/ if present
             Write-Host "Matching with pattern: $wildcardPattern"
           
             foreach ($file in $allFiles) {
+              # Normalize relative path
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
               Write-Host "Matching relativePath: $relativePath"
-              # Match using -like directly
-              if ($relativePath -like $wildcardPattern) {
+          
+              # Match using fuzzy -like
+              if ($relativePath -like "*$wildcardPattern*") {
                 Write-Host "  -> Matched: $relativePath"
                 $matchedFiles += $file
               }
             }
           }
           Write-Host "Total matched files: $($matchedFiles.Count)"
+
 
 
 
