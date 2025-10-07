@@ -23,7 +23,11 @@ jobs:
           #contents: '**\src\main\*.java'
           #contents: 'sample.txt'
           #contents: 'main\flat'
-          contents: '*'
+          #contents: '*'
+          contents: |
+            src\main\flat\*.sample
+            src\main\flat\App.java
+            #app.publish\Application Files
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
