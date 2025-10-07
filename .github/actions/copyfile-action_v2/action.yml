@@ -160,26 +160,46 @@ runs:
           # }
           # Write-Host "Total matched files: $($matchedFiles.Count)"
 
+          # $matchedFiles = @()
+          # foreach ($pattern in $patterns) {
+          #   # Normalize slashes in pattern
+          #   $wildcardPattern = $pattern -replace '\\', '/' -replace '\*\*/', ''  # remove leading **/ if present
+          #   Write-Host "Matching with pattern: $wildcardPattern"
+          
+          #   foreach ($file in $allFiles) {
+          #     # Normalize relative path
+          #     Write-Host "source: $source"
+          #     $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
+          #     Write-Host "Matching relativePath: $relativePath"
+          
+          #     # Match using fuzzy -like
+          #     if ($relativePath -like "$wildcardPattern") {
+          #       Write-Host "  -> Matched: $relativePath"
+          #       $matchedFiles += $file
+          #     }
+          #   }
+          # }
+          # Write-Host "Total matched files: $($matchedFiles.Count)"
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
-            # Normalize slashes in pattern
-            $wildcardPattern = $pattern -replace '\\', '/' -replace '\*\*/', ''  # remove leading **/ if present
-            Write-Host "Matching with pattern: $wildcardPattern"
+            $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
           
             foreach ($file in $allFiles) {
-              # Normalize relative path
-              Write-Host "source: $source"
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-              Write-Host "Matching relativePath: $relativePath"
-          
-              # Match using fuzzy -like
-              if ($relativePath -like "*$wildcardPattern*") {
-                Write-Host "  -> Matched: $relativePath"
-                $matchedFiles += $file
+              # Fuzzy match: treat '**' as "contains"
+              if ($wildcardPattern -like '*[*?]*') {
+                if ($relativePath -like $wildcardPattern -or $relativePath -like "*$wildcardPattern*") {
+                  $matchedFiles += $file
+                }
+              } else {
+                # Exact match
+                if ($relativePath -eq $wildcardPattern) {
+                  $matchedFiles += $file
+                }
               }
             }
           }
-          Write-Host "Total matched files: $($matchedFiles.Count)"
+
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
           foreach ($file in $matchedFiles) {
