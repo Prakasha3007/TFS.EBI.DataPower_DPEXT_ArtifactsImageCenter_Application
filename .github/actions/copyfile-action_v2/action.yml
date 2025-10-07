@@ -194,33 +194,28 @@ runs:
           #     }
           #   }
           # }
-          Write-Host "Resolved patterns:"
-          foreach ($pattern in $patterns) {
-            Write-Host "  Pattern: $pattern"
-          }
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
             $wildcardPattern = $pattern -replace '\\', '/'
             Write-Host "Matching with pattern: $wildcardPattern"
           
-            if ($wildcardPattern -like '*[*?]*') {
-              # Wildcard match
-              $matched = $allFiles | Where-Object {
-                ($_.FullName -replace '\\', '/') -like $wildcardPattern
-              }
-            } else {
-              # Exact match
-              $matched = $allFiles | Where-Object {
-                ($_.FullName -replace '\\', '/') -eq $wildcardPattern
+            foreach ($file in $allFiles) {
+              $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
+              if ($wildcardPattern -like '*[*?]*') {
+                if ($relativePath -like $wildcardPattern) {
+                  Write-Host "  -> Matched (wildcard): $relativePath"
+                  $matchedFiles += $file
+                }
+              } else {
+                if ($relativePath -eq $wildcardPattern) {
+                  Write-Host "  -> Matched (exact): $relativePath"
+                  $matchedFiles += $file
+                }
               }
             }
-            Write-Host "Matched files for pattern '$pattern':"
-            foreach ($f in $matched) {
-              Write-Host "  -> $($f.FullName)"
-            }
-            $matchedFiles += $matched
           }
           Write-Host "Total matched files: $($matchedFiles.Count)"
+
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
           foreach ($file in $matchedFiles) {
