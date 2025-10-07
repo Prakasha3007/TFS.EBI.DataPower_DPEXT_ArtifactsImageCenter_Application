@@ -29,8 +29,8 @@ jobs:
           #contents: 'main\flat'
           #contents: '*'
           #contents: 'ArtifactsImageCenter_FileManifest.xml'
-          #contents: 'flat\*.txt,java\App.java'
-          contents: 'flat\Global.asax'
+          contents: 'flat\*.txt,java\App.java'
+          #contents: 'flat\Global.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
