@@ -188,7 +188,7 @@ runs:
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
               # Fuzzy match: treat '**' as "contains"
               if ($wildcardPattern -like '*[*?]*') {
-                if ($relativePath -like $wildcardPattern -or $relativePath -like "*$wildcardPattern*") {
+                if ($relativePath -like "*$wildcardPattern*") {
                   $matchedFiles += $file
                 }
               } else {
