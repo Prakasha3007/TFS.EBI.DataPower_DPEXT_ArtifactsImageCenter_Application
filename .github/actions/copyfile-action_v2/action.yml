@@ -202,7 +202,7 @@ runs:
             foreach ($file in $allFiles) {
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
               if ($wildcardPattern -like '*[*?]*') {
-                if ($relativePath -like $wildcardPattern) {
+                if ($relativePath -like "*$wildcardPattern*") {
                   Write-Host "  -> Matched (wildcard): $relativePath"
                   $matchedFiles += $file
                 }
