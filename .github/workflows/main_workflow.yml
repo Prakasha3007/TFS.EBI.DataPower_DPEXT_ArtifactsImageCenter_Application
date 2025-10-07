@@ -14,8 +14,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: checking the copy files
-        #uses: ./.github/actions/copyfile-action_v2
-        uses: ./.github/actions/copyfile-actions_v1
+        uses: ./.github/actions/copyfile-action_v2
+        #uses: ./.github/actions/copyfile-actions_v1
         with:
           SourceFolder: src/main
           #SourceFolder: ${{ github.workspace }}
