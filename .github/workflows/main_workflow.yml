@@ -12,6 +12,19 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        
+      - name: Test contents parsing
+        shell: pwsh
+        run: |
+          $patterns = @()
+          foreach ($line in "a,b,c`nd,e" -split "[`n,]") {
+            $trimmed = $line.Trim()
+            if ($trimmed) {
+              $patterns += $trimmed
+            }
+          }
+          Write-Host "Patterns: $($patterns -join ', ')"
+  
 
       - name: checking the copy files
         uses: ./.github/actions/copyfile-action_v2
