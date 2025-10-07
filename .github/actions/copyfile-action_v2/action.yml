@@ -148,7 +148,7 @@ runs:
             $wildcardPattern = $pattern -replace '\\', '/' -replace '\*\*/', ''
             foreach ($file in $allFiles) {
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-              if ($relativePath -like $wildcardPattern -or $wildcardPattern -like '*[*?]*') {
+              if ($wildcardPattern -like '*[*?]*') {
                 if ($relativePath -like "*$wildcardPattern*") {
                   $matchedFiles += $file
                 }
