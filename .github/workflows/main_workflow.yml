@@ -21,7 +21,7 @@ jobs:
           #SourceFolder: ${{ github.workspace }}
           # contents: '**'
           #SourceFolder: '${{ github.workspace }}'
-          contents: '**\src\main\**'
+          #contents: '**\src\main\**'
           #contents: '*src/main/*'
           #contents: 'src/main/**'
           #contents: '**\src\main\*.java'
