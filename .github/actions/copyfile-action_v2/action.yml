@@ -128,7 +128,8 @@ runs:
           # }
           # if ($patterns.Count -eq 0) { $patterns = @("**") }
           $patterns = @()
-          foreach ($line in "${{ inputs.contents }}" -split "[`n,]") {
+          #foreach ($line in "${{ inputs.contents }}" -split "[`n,]") {
+          foreach ($line in "${{ inputs.contents }}" -split "," ) {
             $trimmed = $line.Trim()
             if ($trimmed) {
               # Remove surrounding double quotes if present
