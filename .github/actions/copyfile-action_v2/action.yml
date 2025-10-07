@@ -180,42 +180,45 @@ runs:
           #     ($_.FullName -replace '\\', '/') -like "*$wildcardPattern*"
           #   }
           # }
-          # foreach ($pattern in $patterns) {
-          #   $wildcardPattern = $pattern -replace '\\', '/'
-          #   if ($wildcardPattern -like '*[*?]*') {
-          #     # Wildcard match
-          #     $matchedFiles += $allFiles | Where-Object {
-          #       ($_.FullName -replace '\\', '/') -like $wildcardPattern
-          #     }
-          #   } else {
-          #     # Exact match
-          #     $matchedFiles += $allFiles | Where-Object {
-          #       ($_.FullName -replace '\\', '/') -eq $wildcardPattern
-          #     }
-          #   }
-          # }
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
             $wildcardPattern = $pattern -replace '\\', '/'
             Write-Host "Matching with pattern: $wildcardPattern"
           
+          #   foreach ($file in $allFiles) {
+          #     $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
+          #     if ($wildcardPattern -like '*[*?]*') {
+          #       if ($relativePath -like "*$wildcardPattern*") {
+          #         Write-Host "  -> Matched (wildcard): $relativePath"
+          #         $matchedFiles += $file
+          #       }
+          #     } else {
+          #       if ($relativePath -eq $wildcardPattern) {
+          #         Write-Host "  -> Matched (exact): $relativePath"
+          #         $matchedFiles += $file
+          #       }
+          #     }
+          #   }
+          # }
+          # Write-Host "Total matched files: $($matchedFiles.Count)"
+
+          $matchedFiles = @()
+          foreach ($pattern in $patterns) {
+            $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
+            $regexPattern = [Regex]::Escape($wildcardPattern) -replace '\\\\\*', '.*' -replace '\\\\\?', '.'
+            $regex = "^$regexPattern$"
+          
+            Write-Host "Matching with regex: $regex"
+          
             foreach ($file in $allFiles) {
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-              if ($wildcardPattern -like '*[*?]*') {
-                if ($relativePath -like "*$wildcardPattern*") {
-                  Write-Host "  -> Matched (wildcard): $relativePath"
-                  $matchedFiles += $file
-                }
-              } else {
-                if ($relativePath -eq $wildcardPattern) {
-                  Write-Host "  -> Matched (exact): $relativePath"
-                  $matchedFiles += $file
-                }
+              if ($relativePath -match $regex) {
+                Write-Host "  -> Matched: $relativePath"
+                $matchedFiles += $file
               }
             }
           }
           Write-Host "Total matched files: $($matchedFiles.Count)"
-
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
           foreach ($file in $matchedFiles) {
