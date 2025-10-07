@@ -202,23 +202,45 @@ runs:
           # }
           # Write-Host "Total matched files: $($matchedFiles.Count)"
 
+          # $matchedFiles = @()
+          # foreach ($pattern in $patterns) {
+          #   $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
+          #   $regexPattern = [Regex]::Escape($wildcardPattern) -replace '\\\\\*', '.*' -replace '\\\\\?', '.'
+          #   $regex = "^$regexPattern$"
+          
+          #   Write-Host "Matching with regex: $regex"
+          
+          #   foreach ($file in $allFiles) {
+          #     $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
+          #     if ($relativePath -match $regex) {
+          #       Write-Host "  -> Matched: $relativePath"
+          #       $matchedFiles += $file
+          #     }
+          #   }
+          # }
+          # Write-Host "Total matched files: $($matchedFiles.Count)"
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
             $wildcardPattern = $pattern -replace '\\', '/'  # Normalize slashes
-            $regexPattern = [Regex]::Escape($wildcardPattern) -replace '\\\\\*', '.*' -replace '\\\\\?', '.'
-            $regex = "^$regexPattern$"
           
-            Write-Host "Matching with regex: $regex"
+            # Convert wildcard to regex
+            $regexPattern = [Regex]::Escape($wildcardPattern)
+            $regexPattern = $regexPattern -replace '\\*\\*', '(.+?)'  # '**' → any depth
+            $regexPattern = $regexPattern -replace '\\*', '([^/]+?)'  # '*' → any name
+            $regexPattern = "^$regexPattern$"
+          
+            Write-Host "Matching with regex: $regexPattern"
           
             foreach ($file in $allFiles) {
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-              if ($relativePath -match $regex) {
+              if ($relativePath -match $regexPattern) {
                 Write-Host "  -> Matched: $relativePath"
                 $matchedFiles += $file
               }
             }
           }
           Write-Host "Total matched files: $($matchedFiles.Count)"
+
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
           foreach ($file in $matchedFiles) {
