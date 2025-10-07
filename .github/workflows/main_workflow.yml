@@ -16,14 +16,14 @@ jobs:
       - name: checking the copy files
         uses: ./.github/actions/copyfile-action_v2
         with:
-          #SourceFolder: src/main
-          SourceFolder: ${{ github.workspace }}
+          SourceFolder: src/main
+          #SourceFolder: ${{ github.workspace }}
           # contents: '**'
           #SourceFolder: '${{ github.workspace }}'
-          #contents: '**\src\main\**'
+          contents: '**\src\main\**'
           #contents: '**\src\main\*.java'
           #contents: 'sample.txt'
-          contents: 'src\main\flat'
+          #contents: 'main\flat'
           #contents: '*'
           #contents: 'ArtifactsImageCenter_FileManifest.xml'
           #contents: 'flat\*.txt,java\App.java'
