@@ -27,9 +27,9 @@ jobs:
           #contents: '**\src\main\*.java'
           #contents: 'sample.txt'
           #contents: 'main\flat'
-          #contents: '*'
+          contents: '*'
           #contents: 'ArtifactsImageCenter_FileManifest.xml'
-          contents: 'flat\*.txt,java\App.java'
+          #contents: 'flat\*.txt,java\App.java'
           #contents: 'flat\Global.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
