@@ -116,17 +116,32 @@ runs:
           # if ($patterns.Count -eq 0) { $patterns = @("**") }
 
           # Enhanced pattern parsing: supports newline, comma, trims, strips quotes
+          # $patterns = @()
+          # foreach ($line in "${{ inputs.contents }}" -split "[`n,]") {
+          #   $trimmed = $line.Trim()
+          #   if ($trimmed) {
+          #     if ($trimmed.StartsWith('"') -and $trimmed.EndsWith('"')) {
+          #       $trimmed = $trimmed.Substring(1, $trimmed.Length - 2)
+          #     }
+          #     $patterns += $trimmed
+          #   }
+          # }
+          # if ($patterns.Count -eq 0) { $patterns = @("**") }
           $patterns = @()
           foreach ($line in "${{ inputs.contents }}" -split "[`n,]") {
             $trimmed = $line.Trim()
             if ($trimmed) {
+              # Remove surrounding double quotes if present
               if ($trimmed.StartsWith('"') -and $trimmed.EndsWith('"')) {
                 $trimmed = $trimmed.Substring(1, $trimmed.Length - 2)
               }
               $patterns += $trimmed
             }
           }
+          
+          # Default to "**" if no valid patterns found
           if ($patterns.Count -eq 0) { $patterns = @("**") }
+
 
 
           $overwrite = "${{ inputs.overwrite }}" -eq "true"
