@@ -173,7 +173,7 @@ runs:
           #     Write-Host "Matching relativePath: $relativePath"
           
           #     # Match using fuzzy -like
-          #     if ($relativePath -like "$wildcardPattern") {
+          #     if ($relativePath -like "*$wildcardPattern*") {
           #       Write-Host "  -> Matched: $relativePath"
           #       $matchedFiles += $file
           #     }
@@ -188,11 +188,13 @@ runs:
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
               # Fuzzy match: treat '**' as "contains"
               if ($wildcardPattern -like '*[*?]*') {
+              Write-Host "id condition : $source"
                 if ($relativePath -like "*$wildcardPattern*") {
                   $matchedFiles += $file
                 }
               } else {
                 # Exact match
+                Write-Host "else condition : $source"
                 if ($relativePath -eq $wildcardPattern) {
                   $matchedFiles += $file
                 }
