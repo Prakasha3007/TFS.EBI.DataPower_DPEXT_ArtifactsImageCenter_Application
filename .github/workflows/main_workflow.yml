@@ -8,7 +8,8 @@ on:
 
 jobs:
   copy-files:
-    runs-on: self-hosted
+    #runs-on: self-hosted
+    runs-on: windows-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -17,11 +18,11 @@ jobs:
         uses: ./.github/actions/copyfile-action_v2
         #uses: ./.github/actions/copyfile-actions_v1
         with:
-          SourceFolder: src/main
-          #SourceFolder: ${{ github.workspace }}
+          #SourceFolder: src/main
+          SourceFolder: ${{ github.workspace }}
           # contents: '**'
           #SourceFolder: '${{ github.workspace }}'
-          #contents: '**\src\main\**'
+          contents: '**\src\main\**'
           #contents: '*src/main/*'
           #contents: 'src/main/**'
           #contents: '**\src\main\*.java'
@@ -30,7 +31,7 @@ jobs:
           #contents: '*'
           #contents: 'ArtifactsImageCenter_FileManifest.xml'
           #contents: 'flat\*.txt,java\App.java'
-          contents: 'flat\Globa?.asax'
+          #contents: 'flat\Globa?.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
