@@ -35,7 +35,7 @@ jobs:
           #contents: 'flat\Global.asax'
           
           SourceFolder: ${{ github.workspace }}
-          contents: '**/standalone.xml, **/standalone.conf'
+          contents: '**\standalone.xml, **\standalone.conf'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
