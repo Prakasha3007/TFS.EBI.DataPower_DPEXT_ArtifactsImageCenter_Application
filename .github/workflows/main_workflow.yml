@@ -34,7 +34,7 @@ jobs:
           #contents: 'flat\Globa?.asax'
           #contents: 'flat\Global.asax'
           
-          SourceFolder: src/main
+          SourceFolder: src/main/flat
           contents: '**\standalone.xml, **\standalone.conf'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
