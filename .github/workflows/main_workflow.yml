@@ -46,7 +46,7 @@ jobs:
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
-          FlattenFolders: false
+          FlattenFolders: true
           preserveTimestamp: false
           retryCount: '3'
           delayBetweenRetries: '5000'
