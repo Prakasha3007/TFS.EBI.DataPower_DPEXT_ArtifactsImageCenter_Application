@@ -39,7 +39,7 @@ jobs:
           SourceFolder: '${{ github.workspace }}'
           #SourceFolder: src/main/flat
           #contents: '**\standalone.xml, **\standalone.conf'
-          contents: 'src/main/flat/**/standalone.xml,standalone/**/standalone.conf'
+          contents: 'src/main/flat/**/standalone.xml,standalone/config/**/standalone.conf'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
