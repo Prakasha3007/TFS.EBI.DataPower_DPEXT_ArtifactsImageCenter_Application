@@ -67,8 +67,10 @@ jobs:
           # contents: '**\src\main\**\*.asax'
           # SourceFolder: ''
           # contents: 'src/main/flat/**/standalone1.xml,standalone/config/standalone.conf'
+          # SourceFolder: 'src/main/flat'
+          # contents: 'Global.asax'
           SourceFolder: 'src/main/flat'
-          contents: 'Global.asax'
+          contents: '*.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
