@@ -145,10 +145,43 @@ runs:
           $allFiles = Get-ChildItem -Path $source -Recurse -File
           $matchedFiles = @()
           foreach ($pattern in $patterns) {
-            $wildcardPattern = $pattern -replace '\\', '/' -replace '\*\*/', ''
+          
+            #$wildcardPattern = $pattern -replace '\\', '/' -replace '\*\*/', ''
+            
+            # --- START: improved pattern normalization & wildcard handling ---
+            $origPattern = $pattern
+            # normalize separators to forward slash
+            $normPattern = $pattern -replace '\\', '/'
+
+            # decide if original had wildcard characters
+            $hasWildcard = $origPattern -match '[*?]'
+
+            # detect and remember leading recursive '**/' (on normalized pattern)
+            $hasLeadingRecursive = $normPattern -match '^\*\*/'
+
+            # remove a leading '**/' for normalization (we will handle it by prefixing later)
+            if ($hasLeadingRecursive) {
+              $normPattern = $normPattern -replace '^\*\*/', ''
+            }
+
+            # convert interior '/**/' (multi-segment) into '/*/' which is suitable for -like
+            $normPattern = $normPattern -replace '/\*\*/', '/*/'
+
+            # convert any remaining '**' into '*' for -like matching (conservative)
+            $normPattern = $normPattern -replace '\*\*', '*'
+
+            # if original had leading '**/', anchor matching to allow prefixing anything
+            if ($hasLeadingRecursive) {
+              $wildcardPattern = '*' + $normPattern
+            } else {
+              $wildcardPattern = $normPattern
+            }
+            # --- END: improved pattern normalization & wildcard handling ---
+
             foreach ($file in $allFiles) {
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-              if ($wildcardPattern -like '*[*?]*') {
+              #if ($wildcardPattern -like '*[*?]*') {
+              if ($hasWildcard) {
                 if ($relativePath -like $wildcardPattern) {
                   $matchedFiles += $file
                 }
