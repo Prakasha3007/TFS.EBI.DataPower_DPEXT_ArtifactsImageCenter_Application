@@ -42,7 +42,7 @@ jobs:
           # #contents: '**\config\**\standalone.conf'
           # #contents: '**/config/**/standalone.conf'
           # #contents: '**\standalone.xml, **\standalone.conf'
-          # #contents: 'src/main/flat/**/standalone1.xml,standalone/config/**/standalone.conf'
+          # #contents: 'src/main/flat/**/standalone1.xml,standalone/config/standalone.conf'
           # contents: '**\src\main\flat\**\standalone1.xml'
           # TargetFolder: "targetFolder"
           # CleanTargetFolder: false
