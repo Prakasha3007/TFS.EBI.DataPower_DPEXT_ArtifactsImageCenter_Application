@@ -61,8 +61,10 @@ jobs:
           # contents: '**\A1\**'
           # SourceFolder: ''
           # contents: '**'
-          SourceFolder: ''
-          contents: '*'
+          # SourceFolder: ''
+          # contents: '*'
+          SourceFolder: 'src/main'
+          contents: '**\src\main\**\*.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
