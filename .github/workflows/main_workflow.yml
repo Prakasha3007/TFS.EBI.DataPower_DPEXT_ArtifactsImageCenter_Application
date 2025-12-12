@@ -63,7 +63,7 @@ jobs:
           # contents: '**'
           # SourceFolder: ''
           # contents: '*'
-          SourceFolder: 'src/main'
+          SourceFolder: ''
           contents: '**\src\main\**\*.asax'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
