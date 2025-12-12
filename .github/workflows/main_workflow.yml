@@ -57,8 +57,10 @@ jobs:
 
           # SourceFolder: ''
           # contents: '**\A1\**\ABC.yml'
+          # SourceFolder: ''
+          # contents: '**\A1\**'
           SourceFolder: ''
-          contents: '**\A1\**'
+          contents: '**'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
