@@ -152,23 +152,29 @@ runs:
             $origPattern = $pattern
             # normalize separators to forward slash
             $normPattern = $pattern -replace '\\', '/'
+            Write-Host "normPattern: $normPattern"
 
             # decide if original had wildcard characters
             $hasWildcard = $origPattern -match '[*?]'
+            Write-Host "hasWildcard: $hasWildcard"
 
             # detect and remember leading recursive '**/' (on normalized pattern)
             $hasLeadingRecursive = $normPattern -match '^\*\*/'
+            Write-Host "hasLeadingRecursive: $hasLeadingRecursive"
 
             # remove a leading '**/' for normalization (we will handle it by prefixing later)
             if ($hasLeadingRecursive) {
               $normPattern = $normPattern -replace '^\*\*/', ''
+              Write-Host "normPattern inside if: $normPattern"
             }
 
             # convert interior '/**/' (multi-segment) into '/*/' which is suitable for -like
             $normPattern = $normPattern -replace '/\*\*/', '/*/'
+            Write-Host "normPattern outside 1 : $normPattern"
 
             # convert any remaining '**' into '*' for -like matching (conservative)
             $normPattern = $normPattern -replace '\*\*', '*'
+            Write-Host "normPattern outside 2 : $normPattern"
 
             # if original had leading '**/', anchor matching to allow prefixing anything
             if ($hasLeadingRecursive) {
@@ -176,6 +182,7 @@ runs:
             } else {
               $wildcardPattern = $normPattern
             }
+            Write-Host "final wildcardPattern: $wildcardPattern"
             # --- END: improved pattern normalization & wildcard handling ---
 
             foreach ($file in $allFiles) {
