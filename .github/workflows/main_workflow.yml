@@ -69,8 +69,10 @@ jobs:
           # contents: 'src/main/flat/**/standalone1.xml,standalone/config/standalone.conf'
           # SourceFolder: 'src/main/flat'
           # contents: 'Global.asax'
-          SourceFolder: 'src/main/flat'
-          contents: '*.asax'
+          # SourceFolder: 'src/main/flat'
+          # contents: '*.asax'
+          SourceFolder: ${{ github.workspace }}
+          contents: 'ArtifactsImageCenter_FileManifest.xml'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
