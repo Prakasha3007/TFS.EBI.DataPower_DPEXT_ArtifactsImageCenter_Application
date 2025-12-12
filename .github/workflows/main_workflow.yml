@@ -36,13 +36,13 @@ jobs:
 
           ###############################################
 
-          SourceFolder: '${{ github.workspace }}'
-          contents: '**\src\main\**\*.asax'
-          #SourceFolder: src/main
+          #SourceFolder: '${{ github.workspace }}'
+          #contents: '**\src\main\**\*.asax'
+          SourceFolder: src/main
           #contents: '**\config\**\standalone.conf'
           #contents: '**/config/**/standalone.conf'
           #contents: '**\standalone.xml, **\standalone.conf'
-          #contents: 'src/main/flat/**/standalone.xml,standalone/config/**/standalone.conf'
+          contents: 'src/main/flat/**/standalone.xml,standalone/config/**/standalone.conf'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
