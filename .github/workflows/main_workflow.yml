@@ -36,14 +36,27 @@ jobs:
 
           ###############################################
 
-          SourceFolder: '${{ github.workspace }}'
-          #contents: '**\src\main\**\*.asax'
-          #SourceFolder: src/main
-          #contents: '**\config\**\standalone.conf'
-          #contents: '**/config/**/standalone.conf'
-          #contents: '**\standalone.xml, **\standalone.conf'
-          #contents: 'src/main/flat/**/standalone1.xml,standalone/config/**/standalone.conf'
-          contents: '**\src\main\flat\**\standalone1.xml'
+          # SourceFolder: '${{ github.workspace }}'
+          # #contents: '**\src\main\**\*.asax'
+          # #SourceFolder: src/main
+          # #contents: '**\config\**\standalone.conf'
+          # #contents: '**/config/**/standalone.conf'
+          # #contents: '**\standalone.xml, **\standalone.conf'
+          # #contents: 'src/main/flat/**/standalone1.xml,standalone/config/**/standalone.conf'
+          # contents: '**\src\main\flat\**\standalone1.xml'
+          # TargetFolder: "targetFolder"
+          # CleanTargetFolder: false
+          # overwrite: false
+          # FlattenFolders: true
+          # preserveTimestamp: false
+          # retryCount: '3'
+          # delayBetweenRetries: '5000'
+          # ignoreMakeDirErrors: false
+
+          #################################################
+
+          SourceFolder: ''
+          contents: '**\A1\**\ABC.yml'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
@@ -53,7 +66,7 @@ jobs:
           delayBetweenRetries: '5000'
           ignoreMakeDirErrors: false
 
-          #################################################
+          ############################################
       
       # - name: checking the copy files
       #   uses: ./.github/actions/copyfile-actions_v1
