@@ -55,8 +55,10 @@ jobs:
 
           #################################################
 
+          # SourceFolder: ''
+          # contents: '**\A1\**\ABC.yml'
           SourceFolder: ''
-          contents: '**\A1\**\ABC.yml'
+          contents: '**\A1\**'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
