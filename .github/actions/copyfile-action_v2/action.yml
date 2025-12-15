@@ -1,3 +1,4 @@
+
 # ====================================================================================================
 #           Task        : Copy files
 #           Description : copy files from a source folder to a target folder using match patterns.
@@ -163,42 +164,60 @@ runs:
           $matchedFiles = @()
 
           foreach ($pattern in $patterns) {
-            # --- START: regex-based pattern-to-regex conversion (handles * vs ** correctly) ---
+            # --- START: issue fix — true Azure-style ** semantics ---
             $origPattern = $pattern
             $normPattern = $pattern -replace '\\', '/'
             Write-Host "normPattern: $normPattern"
             Write-Host "origPattern: $origPattern"
-            # If no wildcard characters, perform exact equality match (normalized)
-            if (-not ($origPattern -match '[*?]')) {
-                foreach ($file in $allFiles) {
-                    $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-                    if ($relativePath -eq $normPattern) {
-                        $matchedFiles += $file
-                    }
-                }
-                continue
-            }
-            # Build regex from the minimatch-style pattern:
-            $escaped = [Regex]::Escape($normPattern)
-            
-            # '**' => '.*' (multi-segment, can include '/')
-            $escaped = $escaped -replace '\\\*\\\*', '.*'
 
-            # '*' => '[^/]*' (single segment, does not match '/')
-            $escaped = $escaped -replace '\\\*', '[^/]*'
-
-            # '?' => '[^/]' (single character not '/')
-            $escaped = $escaped -replace '\\\?', '[^/]'
-            Write-Host "escaped: $escaped"
-            $regex = '^' + $escaped + '$'
-            Write-Host "regex: $regex"
-            foreach ($file in $allFiles) {
+            # If no wildcard chars, exact equality (normalized)
+            if (-not ($origPattern -match '[*?\[\]]')) {
+              foreach ($file in $allFiles) {
                 $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-                if ($relativePath -match $regex) {
-                    $matchedFiles += $file
+                if ($relativePath -eq $normPattern) {
+                  $matchedFiles += $file
                 }
+              }
+              continue
             }
-            # --- END: regex-based matching ---
+
+            # Convert minimatch-style glob to regex (CopyFiles@2 semantics)
+            function Convert-GlobToRegex([string] $pat) {
+              $p = $pat -replace '\\', '/'
+
+              # Track and strip leading **/ (means any prefix)
+              $leadingRecursive = $p -match '^\*\*/'
+              if ($leadingRecursive) { $p = $p -replace '^\*\*/', '' }
+
+              # Escape regex metacharacters, keep glob tokens and classes
+              $p = [Regex]::Escape($p)
+              $p = $p -replace '\\\[', '['
+              $p = $p -replace '\\\]', ']'
+
+              # '/**/' (or beginning '**/') => zero or more whole directory segments
+              $p = $p -replace '(^|/)\\*\\*(?=/)', '$1(?:[^/]+/)*'
+
+              # Remaining '**' (e.g., at end) => '.*' (may span '/')
+              $p = $p -replace '\\*\\*', '.*'
+
+              # Single-segment wildcards
+              $p = $p -replace '\\*', '[^/]*'
+              $p = $p -replace '\\?', '[^/]'
+
+              if ($leadingRecursive) { $p = '(?:[^/]+/)*' + $p }
+              return '^' + $p + '$'
+            }
+
+            $regex = Convert-GlobToRegex $normPattern
+            Write-Host "regex: $regex"
+
+            foreach ($file in $allFiles) {
+              $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
+              if ($relativePath -match $regex) {
+                $matchedFiles += $file
+              }
+            }
+            # --- END: issue fix ---
           }
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
