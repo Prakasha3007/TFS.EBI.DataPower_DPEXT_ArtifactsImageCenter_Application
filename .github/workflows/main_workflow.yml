@@ -73,8 +73,11 @@ jobs:
           # contents: '*.asax'
           # SourceFolder: ${{ github.workspace }}
           # contents: 'ArtifactsImageCenter_FileManifest.xml'
-          SourceFolder: src/main
-          contents: 'flat/Globa?.asax'
+          # SourceFolder: src/main
+          # contents: 'flat/Globa?.asax'
+
+          SourceFolder: Folder-A/A1
+          contents: '*.yml'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
