@@ -71,10 +71,10 @@ jobs:
           # contents: 'Global.asax'
           # SourceFolder: 'src/main/flat'
           # contents: '*.asax'
-          # SourceFolder: ${{ github.workspace }}
-          # contents: 'ArtifactsImageCenter_FileManifest.xml'
-          SourceFolder: src/main
-          contents: 'flat/Globa?.asax'
+          SourceFolder: ${{ github.workspace }}
+          contents: 'ArtifactsImageCenter_FileManifest.xml'
+          # SourceFolder: src/main
+          # contents: 'flat/Globa?.asax'
 
           # SourceFolder: Folder-A/A1
           # contents: '*.yml'
