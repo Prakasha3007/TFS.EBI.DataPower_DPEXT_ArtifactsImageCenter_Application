@@ -150,9 +150,16 @@ runs:
             $origPattern = $pattern
             $normPattern = $pattern -replace '\\', '/'
             $hasWildcard = $origPattern -match '[*?]'
-            $hasLeadingRecursive = $normPattern -match '^\*\*/'
 
-            if ($hasLeadingRecursive) {
+            # Detect leading recursive **/ OR bare ** (to mean recursive)
+            $hasLeadingRecursive = ($normPattern -match '^\*\*/') -or ($normPattern -eq '**')
+
+            if ($hasLeadingRecursive -and ($normPattern -eq '**')) {
+              # Special case: bare ** should be recursive and match all paths.
+              # We'll map it to '*' for -like but keep hasLeadingRecursive=true to avoid single-segment restriction.
+              $normPattern = '*'  # results in wildcardPattern='*' below
+            } elseif ($hasLeadingRecursive) {
+              # remove the leading '**/' only
               $normPattern = $normPattern -replace '^\*\*/', ''
             }
 
@@ -163,13 +170,18 @@ runs:
             $normPattern = $normPattern -replace '\*\*', '*'
 
             if ($hasLeadingRecursive) {
+              # If normPattern became '*' due to bare **, this stays '*'
               $wildcardPattern = '*' + $normPattern
+              # But if normPattern == '*', '*' + '*' => '**' (undesired).
+              # Fix: Collapse '**' to '*' for -like usage.
+              if ($wildcardPattern -eq '**') { $wildcardPattern = '*' }
             } else {
               $wildcardPattern = $normPattern
             }
 
             # ----------------------------------------------
             # FIX: Enforce single-segment patterns (e.g., "*", "*.txt") to match only files in source root.
+            # BUT allow recursive cases (hasLeadingRecursive) to match across subfolders.
             # ----------------------------------------------
             foreach ($file in $allFiles) {
               $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
