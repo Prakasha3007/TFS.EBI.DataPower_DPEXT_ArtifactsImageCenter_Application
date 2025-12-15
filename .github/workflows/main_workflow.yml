@@ -63,8 +63,8 @@ jobs:
           # contents: '**'
           # SourceFolder: ''
           # contents: '*'
-          SourceFolder: ''
-          contents: '**\src\main\**\*.asax'
+          # SourceFolder: ''
+          # contents: '**\src\main\**\*.asax'
           # SourceFolder: ''
           # contents: 'src/main/flat/**/standalone1.xml,standalone/config/standalone.conf'
           # SourceFolder: 'src/main/flat'
@@ -76,8 +76,8 @@ jobs:
           # SourceFolder: src/main
           # contents: 'flat/Globa?.asax'
 
-          # SourceFolder: Folder-A/A1
-          # contents: '*.yml'
+          SourceFolder: Folder-A/A1
+          contents: '*.yml'
           TargetFolder: "targetFolder"
           CleanTargetFolder: false
           overwrite: false
