@@ -55,12 +55,12 @@ jobs:
 
           #################################################
 
-          SourceFolder: ''
-          contents: '**\A1\**\ABC.yml'
+          # SourceFolder: ''
+          # contents: '**\A1\**\ABC.yml'
           # SourceFolder: ''
           # contents: '**\A1\**'
-          # SourceFolder: ''
-          # contents: '**'
+          SourceFolder: ''
+          contents: '**'
           # SourceFolder: ''
           # contents: '*'
           # SourceFolder: ''
