@@ -5,63 +5,52 @@
 #           Version     : v3
 # ====================================================================================================
 name: CopyFiles
-
 description: GitHub composite action to replicate Azure DevOps CopyFiles@2 behavior
 
 inputs:
-
   SourceFolder:
     description: 'Source folder path'
     required: true
     type: string
-
   TargetFolder:
     description: 'Target folder path'
     required: true
     type: string
-
   contents:
     description: 'Contents to copy (minimatch patterns)'
     required: false
     type: string
     default: '**'
-
   CleanTargetFolder:
     description: 'Clean target folder before copying'
     required: false
     type: boolean
     default: false
-
   overwrite:
     description: 'Overwrite files in the target folder'
     required: false
     type: boolean
     default: false
-
   FlattenFolders:
     description: 'Flatten folder structure'
     required: false
     type: boolean
     default: false
-
   preserveTimestamp:
     description: 'Preserve target timestamp during copy'
     required: false
     type: boolean
     default: false
-
   retryCount:
     description: 'Retry count for copying files'
     required: false
     type: string
     default: '0'
-
   delayBetweenRetries:
     description: 'Delay between retries in milliseconds'
     required: false
     type: string
     default: '1000'
-
   ignoreMakeDirErrors:
     description: 'Ignore errors during creation of target folder'
     required: false
@@ -71,7 +60,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-
     - name: Task-Header
       shell: pwsh
       run: |
@@ -80,7 +68,7 @@ runs:
         Write-Host "Description : copy files from a source folder to a target folder using match patterns."
         Write-Host "Version     : v3"
         Write-Host "===================================================================================================="
-
+        
     - name: Validate - Inputs
       shell: pwsh
       run: |
@@ -94,7 +82,7 @@ runs:
         Write-Host "Retry Count: ${{ inputs.retryCount }}"
         Write-Host "Delay Between Retries: ${{ inputs.delayBetweenRetries }}"
         Write-Host "Ignore MakeDir Errors: ${{ inputs.ignoreMakeDirErrors }}"
-
+        
     - name: Copy Files
       shell: pwsh
       run: |
@@ -107,15 +95,12 @@ runs:
 
           $source = "${{ inputs.SourceFolder }}"
           $target = "${{ inputs.TargetFolder }}"
-
           if (-not [System.IO.Path]::IsPathRooted($source)) {
             $source = Join-Path "${{ github.workspace }}" $source
           }
-
           if (-not [System.IO.Path]::IsPathRooted($target)) {
             $target = Join-Path "${{ github.workspace }}" $target
           }
-
           $patterns = @()
           foreach ($line in "${{ inputs.contents }}" -split "," ) {
             $trimmed = $line.Trim()
@@ -127,7 +112,7 @@ runs:
               $patterns += $trimmed
             }
           }
-
+          
           # Default to "**" if no valid patterns found
           if ($patterns.Count -eq 0) { $patterns = @("**") }
 
@@ -138,90 +123,82 @@ runs:
           $delayBetweenRetries = [int]::Parse("${{ inputs.delayBetweenRetries }}")
           $ignoreMakeDirErrors = "${{ inputs.ignoreMakeDirErrors }}" -eq "true"
           $cleanTarget = "${{ inputs.CleanTargetFolder }}" -eq "true"
-
           $ErrorActionPreference = "Stop"
-
+          
           if (-not (Test-Path $source)) {
             Write-Error "Source folder does not exist: $source"
             exit 1
           }
-
           try {
             if ($cleanTarget -and (Test-Path $target)) {
               Write-Host "Target folder exists. Cleaning the target folder: $target"
               Remove-Item -Path $target -Recurse -Force
               New-Item -ItemType Directory -Path $target -Force | Out-Null
             } elseif (-not (Test-Path $target)) {
-              Write-Host "Target folder does not exist. Creating directory: $target"
-              New-Item -ItemType Directory -Path $target -Force | Out-Null
+                Write-Host "Target folder does not exist. Creating directory: $target"
+                New-Item -ItemType Directory -Path $target -Force | Out-Null
             }
           } catch {
-            if (-not $ignoreMakeDirErrors) { throw $_ }
-            Write-Warning "ignoreMakeDirErrors=true. Continuing despite error creating $target"
+              if (-not $ignoreMakeDirErrors) { throw $_ }
+              Write-Warning "ignoreMakeDirErrors=true. Continuing despite error creating $target"
           }
-
+          
           $allFiles = Get-ChildItem -Path $source -Recurse -File
           $matchedFiles = @()
-
           foreach ($pattern in $patterns) {
-            # --- START: issue fix — true Azure-style ** semantics ---
+          
             $origPattern = $pattern
             $normPattern = $pattern -replace '\\', '/'
-            Write-Host "normPattern: $normPattern"
-            Write-Host "origPattern: $origPattern"
+            $hasWildcard = $origPattern -match '[*?]'
+            $hasLeadingRecursive = $normPattern -match '^\*\*/'
 
-            # If no wildcard chars, exact equality (normalized)
-            if (-not ($origPattern -match '[*?\[\]]')) {
-              foreach ($file in $allFiles) {
-                $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-                if ($relativePath -eq $normPattern) {
+            if ($hasLeadingRecursive) {
+              $normPattern = $normPattern -replace '^\*\*/', ''
+            }
+
+            # convert interior '/**/' (multi-segment) into '/*/' which is suitable for -like
+            $normPattern = $normPattern -replace '/\*\*/', '/*/'
+
+            # convert any remaining '**' into '*' for -like matching (conservative)
+            $normPattern = $normPattern -replace '\*\*', '*'
+
+            if ($hasLeadingRecursive) {
+              $wildcardPattern = '*' + $normPattern
+            } else {
+              $wildcardPattern = $normPattern
+            }
+
+            # ----------------------------------------------
+            # FIX: Enforce single-segment patterns (e.g., "*", "*.txt") to match only files in source root.
+            # ----------------------------------------------
+            foreach ($file in $allFiles) {
+              $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
+
+              # Single-segment means: not recursive-leading and pattern contains no '/'
+              $isSingleSegment = -not $hasLeadingRecursive -and ($wildcardPattern -notmatch '/')
+
+              if ($hasWildcard) {
+                if ($isSingleSegment) {
+                  # Only consider files directly under source (no subfolder in path)
+                  if (($relativePath -notmatch '/') -and ($relativePath -like $wildcardPattern)) {
+                    $matchedFiles += $file
+                  }
+                } else {
+                  # Multi-segment or recursive pattern: existing behavior
+                  if ($relativePath -like $wildcardPattern) {
+                    $matchedFiles += $file
+                  }
+                }
+              } else {
+                # Exact match (no wildcard)
+                if ($relativePath -eq $wildcardPattern) {
                   $matchedFiles += $file
                 }
               }
-              continue
             }
-
-            # Convert minimatch-style glob to regex (CopyFiles@2 semantics)
-            function Convert-GlobToRegex([string] $pat) {
-              $p = $pat -replace '\\', '/'
-
-              # Track and strip leading **/ (means any prefix)
-              $leadingRecursive = $p -match '^\*\*/'
-              if ($leadingRecursive) { $p = $p -replace '^\*\*/', '' }
-
-              # Escape regex metacharacters, keep glob tokens and classes
-              $p = [Regex]::Escape($p)
-              $p = $p -replace '\\\[', '['
-              $p = $p -replace '\\\]', ']'
-
-              # '/**/' (or beginning '**/') => zero or more whole directory segments
-              $p = $p -replace '(^|/)\\*\\*(?=/)', '$1(?:[^/]+/)*'
-
-              # Remaining '**' (e.g., at end) => '.*' (may span '/')
-              $p = $p -replace '\\*\\*', '.*'
-
-              # Single-segment wildcards
-              $p = $p -replace '\\*', '[^/]*'
-              $p = $p -replace '\\?', '[^/]'
-
-              if ($leadingRecursive) { $p = '(?:[^/]+/)*' + $p }
-              return '^' + $p + '$'
-            }
-
-            $regex = Convert-GlobToRegex $normPattern
-            Write-Host "regex: $regex"
-
-            foreach ($file in $allFiles) {
-              $relativePath = [System.IO.Path]::GetRelativePath($source, $file.FullName) -replace '\\', '/'
-              if ($relativePath -match $regex) {
-                $matchedFiles += $file
-              }
-            }
-            # --- END: issue fix ---
           }
 
           Write-Host "Found $($matchedFiles.Count) files to copy."
-
           foreach ($file in $matchedFiles) {
             $sourceFile = $file.FullName
             $destination = if ($flatten) {
@@ -252,7 +229,7 @@ runs:
                     $destItem.Attributes = $destItem.Attributes -bxor [System.IO.FileAttributes]::ReadOnly
                   }
                 }
-
+                
                 $destinationExists = Test-Path $destination
                 if ($overwrite) {
                   Write-Host "OverWriting Existing file: $destination"
@@ -291,7 +268,6 @@ runs:
                     }
                   }
                 }
-
                 break
               } catch {
                 if ($attempt -eq $retryCount) {
@@ -301,17 +277,15 @@ runs:
                 Write-Host "Retrying copy... Attempt $($attempt + 1)"
                 Start-Sleep -Milliseconds $delayBetweenRetries
               }
-
               $attempt++
             }
           }
-
           Write-Host "Copy operation completed successfully."
         } catch {
           Write-Error "Fatal error during copy: $_"
           exit 1
         }
-
+        
     - name: List Files in Target Folder
       shell: pwsh
       run: |
